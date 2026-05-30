@@ -1,0 +1,69 @@
+.profile-page { padding: 40px 20px 60px; display: flex; flex-direction: column; gap: 32px; }
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.profile-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--secondary), var(--primary));
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: 900;
+  font-family: 'Nunito', sans-serif;
+  flex-shrink: 0;
+}
+
+.profile-info { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+.profile-info h2 { font-size: 1.4rem; font-weight: 800; }
+.profile-info p  { color: var(--text-muted); font-size: 0.9rem; }
+
+.section-heading {
+  font-family: 'Nunito', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 900;
+  margin-bottom: 20px;
+}
+
+.orders-list { display: flex; flex-direction: column; gap: 16px; }
+
+.order-card { padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+
+.order-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+.order-id   { font-weight: 800; font-size: 0.95rem; }
+.order-date { font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; }
+
+.order-body { display: flex; flex-direction: column; gap: 8px; }
+
+.order-detail {
+  display: flex;
+  gap: 12px;
+  font-size: 0.875rem;
+}
+.order-detail span:first-child {
+  color: var(--text-muted);
+  min-width: 100px;
+}
+.order-detail span:last-child { font-weight: 600; }
+
+.order-total {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 800;
+  font-size: 1rem;
+  padding-top: 12px;
+  border-top: 2px solid var(--border);
+  color: var(--primary);
+}
