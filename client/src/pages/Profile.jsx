@@ -25,7 +25,6 @@ export default function Profile() {
   const fetchOrders = async () => {
     try {
       const { data } = await getOrders();
-      // Filter only this user's orders
       const myOrders = (data.orders || []).filter(
         (o) => o.userId?._id === user._id || o.userId === user._id
       );
@@ -39,72 +38,110 @@ export default function Profile() {
 
   const handleLogout = () => { logout(); navigate('/login'); };
 
-  return (
-    <div className="profile-page page-container">
-      {/* Profile Header */}
-      <div className="profile-header card">
-        <div className="profile-avatar">
-          {user?.username?.[0]?.toUpperCase() || '?'}
-        </div>
-        <div className="profile-info">
-          <h2>{user?.username}</h2>
-          <p>{user?.email}</p>
-          <span className={`badge ${user?.role === 'admin' ? 'badge-purple' : 'badge-orange'}`}>
-            {user?.role}
-          </span>
-        </div>
-        <button className="btn btn-outline" onClick={handleLogout}>Logout</button>
-      </div>
+  const totalSpent = orders.reduce((s, o) => s + (o.totalAmount || 0), 0);
+  const delivered  = orders.filter((o) => o.status === 'delivered').length;
 
-      {/* Orders */}
-      <div className="profile-orders">
-        <h2 className="section-heading">📦 My Orders</h2>
+  return (
+    <div className="profile-page">
+
+      {/* ── Hero Header ── */}
+      <header className="profile-hero">
+        <span className="profile-hero-bgword">PROFILE</span>
+        <div className="profile-hero-inner">
+          <div className="profile-hero-top">
+            <div className="profile-avatar">
+              {user?.username?.[0]?.toUpperCase() || '?'}
+            </div>
+            <div className="profile-info">
+              <div className="profile-hero-tag">
+                {user?.role === 'admin' ? '⚙️ Admin' : '👤 Member'}
+              </div>
+              <h1 className="profile-username">{user?.username}</h1>
+              <p className="profile-email">{user?.email}</p>
+            </div>
+            <button className="btn-logout" onClick={handleLogout}>
+              Sign Out →
+            </button>
+          </div>
+
+          {/* Stats strip */}
+          <div className="profile-stats">
+            <div className="profile-stat">
+              <span className="profile-stat-lbl">Total Orders</span>
+              <span className="profile-stat-val">{orders.length}</span>
+            </div>
+            <div className="profile-stat">
+              <span className="profile-stat-lbl">Total Spent</span>
+              <span className="profile-stat-val">₱{totalSpent.toLocaleString()}</span>
+            </div>
+            <div className="profile-stat">
+              <span className="profile-stat-lbl">Delivered</span>
+              <span className="profile-stat-val">{delivered}</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* ── Content ── */}
+      <div className="profile-content">
+        <h2 className="section-heading">MY <span className="hl">ORDERS</span></h2>
 
         {loading && <div className="loader"><div className="spinner" /></div>}
 
         {!loading && orders.length === 0 && (
           <div className="empty-state">
             <div className="icon">📦</div>
-            <h3>No orders yet</h3>
-            <p>Your order history will appear here.</p>
+            <h3>No Orders Yet</h3>
+            <p>Your order history will appear here once you make a purchase.</p>
           </div>
         )}
 
-        <div className="orders-list">
-          {orders.map((order) => (
-            <div className="order-card card" key={order._id}>
-              <div className="order-header">
-                <div>
-                  <p className="order-id">Order #{order._id.slice(-8).toUpperCase()}</p>
-                  <p className="order-date">{new Date(order.createdAt).toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' })}</p>
-                </div>
-                <span className={`badge ${statusColors[order.status] || 'badge-orange'}`}>
-                  {order.status}
-                </span>
-              </div>
+        {!loading && orders.length > 0 && (
+          <div className="orders-list">
+            {orders.map((order) => (
+              <div className="order-card" key={order._id}>
 
-              <div className="order-body">
-                <div className="order-detail">
-                  <span>📍 Ship to</span>
-                  <span>{order.shippingAddress}</span>
+                {/* Card Header */}
+                <div className="order-card-header">
+                  <span className="order-id">
+                    #{order._id.slice(-8).toUpperCase()}
+                  </span>
+                  <span className="order-date">
+                    {new Date(order.createdAt).toLocaleDateString('en-US', {
+                      year: 'numeric', month: 'long', day: 'numeric'
+                    })}
+                  </span>
+                  <span className={`badge ${statusColors[order.status] || 'badge-orange'}`}>
+                    {order.status}
+                  </span>
                 </div>
-                <div className="order-detail">
-                  <span>💳 Payment</span>
-                  <span>{order.paymentMethod}</span>
-                </div>
-                <div className="order-detail">
-                  <span>🛍️ Items</span>
-                  <span>{order.products?.length} item(s)</span>
-                </div>
-              </div>
 
-              <div className="order-total">
-                <span>Total</span>
-                <span>₱{order.totalAmount?.toLocaleString()}</span>
+                {/* Card Body */}
+                <div className="order-card-body">
+                  <div className="order-detail">
+                    <span className="order-detail-lbl">Ship to</span>
+                    <span className="order-detail-val">{order.shippingAddress}</span>
+                  </div>
+                  <div className="order-detail">
+                    <span className="order-detail-lbl">Payment</span>
+                    <span className="order-detail-val">{order.paymentMethod}</span>
+                  </div>
+                  <div className="order-detail">
+                    <span className="order-detail-lbl">Items</span>
+                    <span className="order-detail-val">{order.products?.length} item(s)</span>
+                  </div>
+                </div>
+
+                {/* Card Footer */}
+                <div className="order-card-footer">
+                  <span className="order-total-lbl">Order Total</span>
+                  <span className="order-total-val">₱{order.totalAmount?.toLocaleString()}</span>
+                </div>
+
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
