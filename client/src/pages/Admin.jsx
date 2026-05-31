@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getProducts, addProduct, getOrders, updateOrderStatus } from '../services/api';
+import { getProducts, addProduct, getOrders, updateOrderStatus, updateProduct, deleteProduct } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import './Admin.css';
@@ -23,16 +23,25 @@ export default function Admin() {
   const [loading, setLoading]   = useState(true);
 
   // per-order status draft & saving state
-  const [statusDraft, setStatusDraft]   = useState({});   // { [orderId]: status }
-  const [savingId, setSavingId]         = useState(null);
-  const [saveSuccess, setSaveSuccess]   = useState(null);
+  const [statusDraft, setStatusDraft] = useState({});
+  const [savingId, setSavingId]       = useState(null);
+  const [saveSuccess, setSaveSuccess] = useState(null);
 
+  // add product form
   const [form, setForm] = useState({
     name: '', description: '', price: '', category: '', stock: '', image: ''
   });
   const [adding, setAdding]         = useState(false);
   const [addError, setAddError]     = useState('');
   const [addSuccess, setAddSuccess] = useState('');
+
+  // edit product modal
+  const [editProduct, setEditProduct]   = useState(null); // product being edited
+  const [editForm, setEditForm]         = useState({});
+  const [editSaving, setEditSaving]     = useState(false);
+  const [editError, setEditError]       = useState('');
+  const [deletingId, setDeletingId]     = useState(null);
+  const [confirmDelete, setConfirmDelete] = useState(null); // product id to confirm
 
   useEffect(() => {
     if (!user || !isAdmin) { navigate('/'); return; }
@@ -46,7 +55,6 @@ export default function Admin() {
       setProducts(pRes.data.products || []);
       const fetchedOrders = oRes.data.orders || [];
       setOrders(fetchedOrders);
-      // seed draft with current statuses
       const draft = {};
       fetchedOrders.forEach(o => { draft[o._id] = o.status; });
       setStatusDraft(draft);
@@ -56,8 +64,7 @@ export default function Admin() {
 
   const handleFormChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
-    setAddError('');
-    setAddSuccess('');
+    setAddError(''); setAddSuccess('');
   };
 
   const handleAddProduct = async (e) => {
@@ -66,23 +73,72 @@ export default function Admin() {
     try {
       setAdding(true);
       await addProduct({
-        name: form.name,
-        description: form.description,
-        price: Number(form.price),
-        category: form.category,
-        stock: Number(form.stock) || 0,
-        image: form.image,
+        name: form.name, description: form.description,
+        price: Number(form.price), category: form.category,
+        stock: Number(form.stock) || 0, image: form.image,
       });
       setForm({ name: '', description: '', price: '', category: '', stock: '', image: '' });
       setAddSuccess('Product added successfully!');
       fetchData();
     } catch (err) {
       setAddError(err.response?.data?.message || 'Failed to add product.');
-    } finally {
-      setAdding(false);
-    }
+    } finally { setAdding(false); }
   };
 
+  // ── Edit handlers ──
+  const openEdit = (product) => {
+    setEditProduct(product);
+    setEditForm({
+      name:        product.name        || '',
+      description: product.description || '',
+      price:       product.price       || '',
+      category:    product.category    || '',
+      stock:       product.stock       || 0,
+      image:       product.image       || '',
+    });
+    setEditError('');
+  };
+
+  const closeEdit = () => { setEditProduct(null); setEditError(''); };
+
+  const handleEditChange = (e) => {
+    setEditForm({ ...editForm, [e.target.name]: e.target.value });
+    setEditError('');
+  };
+
+  const handleEditSave = async (e) => {
+    e.preventDefault();
+    if (!editForm.name || !editForm.price) { setEditError('Name and price are required.'); return; }
+    try {
+      setEditSaving(true);
+      await updateProduct(editProduct._id, {
+        name:        editForm.name,
+        description: editForm.description,
+        price:       Number(editForm.price),
+        category:    editForm.category,
+        stock:       Number(editForm.stock) || 0,
+        image:       editForm.image,
+      });
+      closeEdit();
+      fetchData();
+    } catch (err) {
+      setEditError(err.response?.data?.message || 'Failed to update product.');
+    } finally { setEditSaving(false); }
+  };
+
+  const handleDeleteConfirm = (productId) => setConfirmDelete(productId);
+
+  const handleDeleteProduct = async () => {
+    try {
+      setDeletingId(confirmDelete);
+      await deleteProduct(confirmDelete);
+      setConfirmDelete(null);
+      fetchData();
+    } catch { /* silent */ }
+    finally { setDeletingId(null); }
+  };
+
+  // ── Order status handlers ──
   const handleStatusChange = (orderId, newStatus) => {
     setStatusDraft(prev => ({ ...prev, [orderId]: newStatus }));
     setSaveSuccess(null);
@@ -90,20 +146,13 @@ export default function Admin() {
 
   const handleSaveStatus = async (orderId) => {
     try {
-      setSavingId(orderId);
-      setSaveSuccess(null);
+      setSavingId(orderId); setSaveSuccess(null);
       await updateOrderStatus(orderId, statusDraft[orderId]);
-      // update local orders state
-      setOrders(prev =>
-        prev.map(o => o._id === orderId ? { ...o, status: statusDraft[orderId] } : o)
-      );
+      setOrders(prev => prev.map(o => o._id === orderId ? { ...o, status: statusDraft[orderId] } : o));
       setSaveSuccess(orderId);
       setTimeout(() => setSaveSuccess(null), 2500);
-    } catch {
-      // silent — could add per-row error if needed
-    } finally {
-      setSavingId(null);
-    }
+    } catch { /* silent */ }
+    finally { setSavingId(null); }
   };
 
   const revenue = orders.reduce((s, o) => s + (o.totalAmount || 0), 0);
@@ -120,13 +169,10 @@ export default function Admin() {
           <div className="admin-hero-top">
             <div>
               <div className="admin-hero-label">Control Panel</div>
-              <h1 className="admin-page-title">
-                DASH<span className="hl-yellow">BOARD</span>
-              </h1>
+              <h1 className="admin-page-title">DASH<span className="hl-yellow">BOARD</span></h1>
               <p className="admin-page-sub">Manage products, track orders, monitor revenue.</p>
             </div>
           </div>
-
           <div className="admin-stats">
             <div className="admin-stat">
               <span className="stat-lbl">Total Products</span>
@@ -152,11 +198,7 @@ export default function Admin() {
             { key: 'add',      label: '＋ Add Product' },
             { key: 'orders',   label: '🧾 Orders' },
           ].map(({ key, label }) => (
-            <button
-              key={key}
-              className={`tab-btn ${tab === key ? 'active' : ''}`}
-              onClick={() => setTab(key)}
-            >
+            <button key={key} className={`tab-btn ${tab === key ? 'active' : ''}`} onClick={() => setTab(key)}>
               {label}
             </button>
           ))}
@@ -165,7 +207,6 @@ export default function Admin() {
 
       {/* ── Content ── */}
       <div className="admin-content">
-
         {loading && <div className="loader"><div className="spinner" /></div>}
 
         {/* Products Tab */}
@@ -185,6 +226,7 @@ export default function Admin() {
                     <th>Category</th>
                     <th>Price</th>
                     <th>Stock</th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -207,6 +249,12 @@ export default function Admin() {
                         <span className={`badge ${p.stock > 0 ? 'badge-green' : 'badge-red'}`}>
                           {p.stock > 0 ? p.stock : 'Out'}
                         </span>
+                      </td>
+                      <td>
+                        <div className="product-actions">
+                          <button className="btn-edit" onClick={() => openEdit(p)}>✏️ Edit</button>
+                          <button className="btn-delete" onClick={() => handleDeleteConfirm(p._id)}>🗑️ Delete</button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -287,9 +335,9 @@ export default function Admin() {
                 </thead>
                 <tbody>
                   {orders.map((o) => {
-                    const isDirty   = statusDraft[o._id] !== o.status;
-                    const isSaving  = savingId === o._id;
-                    const didSave   = saveSuccess === o._id;
+                    const isDirty  = statusDraft[o._id] !== o.status;
+                    const isSaving = savingId === o._id;
+                    const didSave  = saveSuccess === o._id;
                     return (
                       <tr key={o._id}>
                         <td><span className="order-id">#{o._id.slice(-8).toUpperCase()}</span></td>
@@ -341,8 +389,85 @@ export default function Admin() {
             </div>
           )
         )}
-
       </div>
+
+      {/* ── Edit Product Modal ── */}
+      {editProduct && (
+        <div className="modal-overlay" onClick={closeEdit}>
+          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>EDIT <span className="header-accent">PRODUCT</span></h3>
+              <button className="modal-close" onClick={closeEdit}>✕</button>
+            </div>
+            <form onSubmit={handleEditSave} className="add-form">
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Product Name *</label>
+                  <input className="input-field" name="name" value={editForm.name} onChange={handleEditChange} />
+                </div>
+                <div className="form-group">
+                  <label>Category</label>
+                  <input className="input-field" name="category" value={editForm.category} onChange={handleEditChange} />
+                </div>
+              </div>
+              <div className="form-group">
+                <label>Description</label>
+                <textarea className="input-field" name="description" rows={3} value={editForm.description} onChange={handleEditChange} />
+              </div>
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Price (₱) *</label>
+                  <input className="input-field" name="price" type="number" min="0" value={editForm.price} onChange={handleEditChange} />
+                </div>
+                <div className="form-group">
+                  <label>Stock</label>
+                  <input className="input-field" name="stock" type="number" min="0" value={editForm.stock} onChange={handleEditChange} />
+                </div>
+              </div>
+              <div className="form-group">
+                <label>Image URL</label>
+                <input className="input-field" name="image" placeholder="https://…" value={editForm.image} onChange={handleEditChange} />
+              </div>
+              {editError && <p className="error-msg">⚠️ {editError}</p>}
+              <div className="modal-actions">
+                <button type="button" className="btn-cancel" onClick={closeEdit}>Cancel</button>
+                <button type="submit" className="btn-submit" disabled={editSaving}>
+                  {editSaving ? 'Saving…' : '💾 Save Changes'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── Delete Confirm Modal ── */}
+      {confirmDelete && (
+        <div className="modal-overlay" onClick={() => setConfirmDelete(null)}>
+          <div className="modal-card modal-card--sm" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>DELETE <span className="header-accent" style={{color:'var(--color1)'}}>PRODUCT</span></h3>
+              <button className="modal-close" onClick={() => setConfirmDelete(null)}>✕</button>
+            </div>
+            <div style={{ padding: '24px 28px' }}>
+              <p style={{ fontSize: '0.9rem', color: 'var(--muted)', marginBottom: '24px' }}>
+                Are you sure? This action cannot be undone.
+              </p>
+              <div className="modal-actions">
+                <button className="btn-cancel" onClick={() => setConfirmDelete(null)}>Cancel</button>
+                <button
+                  className="btn-submit"
+                  style={{ background: 'var(--color1)', borderColor: 'var(--color1)' }}
+                  onClick={handleDeleteProduct}
+                  disabled={!!deletingId}
+                >
+                  {deletingId ? 'Deleting…' : '🗑️ Yes, Delete'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
