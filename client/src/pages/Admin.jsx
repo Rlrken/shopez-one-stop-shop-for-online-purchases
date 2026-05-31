@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
-import { getProducts, addProduct, getOrders } from '../services/api';
+import { getProducts, addProduct, getOrders, updateOrderStatus } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import './Admin.css';
+
+const STATUS_OPTIONS = ['pending', 'processing', 'shipped', 'delivered'];
 
 const statusColors = {
   pending:    'badge-yellow',
@@ -20,11 +22,16 @@ export default function Admin() {
   const [orders, setOrders]     = useState([]);
   const [loading, setLoading]   = useState(true);
 
+  // per-order status draft & saving state
+  const [statusDraft, setStatusDraft]   = useState({});   // { [orderId]: status }
+  const [savingId, setSavingId]         = useState(null);
+  const [saveSuccess, setSaveSuccess]   = useState(null);
+
   const [form, setForm] = useState({
     name: '', description: '', price: '', category: '', stock: '', image: ''
   });
-  const [adding, setAdding]       = useState(false);
-  const [addError, setAddError]   = useState('');
+  const [adding, setAdding]         = useState(false);
+  const [addError, setAddError]     = useState('');
   const [addSuccess, setAddSuccess] = useState('');
 
   useEffect(() => {
@@ -37,7 +44,12 @@ export default function Admin() {
       setLoading(true);
       const [pRes, oRes] = await Promise.all([getProducts(), getOrders()]);
       setProducts(pRes.data.products || []);
-      setOrders(oRes.data.orders || []);
+      const fetchedOrders = oRes.data.orders || [];
+      setOrders(fetchedOrders);
+      // seed draft with current statuses
+      const draft = {};
+      fetchedOrders.forEach(o => { draft[o._id] = o.status; });
+      setStatusDraft(draft);
     } catch { /* silent */ }
     finally { setLoading(false); }
   };
@@ -71,6 +83,29 @@ export default function Admin() {
     }
   };
 
+  const handleStatusChange = (orderId, newStatus) => {
+    setStatusDraft(prev => ({ ...prev, [orderId]: newStatus }));
+    setSaveSuccess(null);
+  };
+
+  const handleSaveStatus = async (orderId) => {
+    try {
+      setSavingId(orderId);
+      setSaveSuccess(null);
+      await updateOrderStatus(orderId, statusDraft[orderId]);
+      // update local orders state
+      setOrders(prev =>
+        prev.map(o => o._id === orderId ? { ...o, status: statusDraft[orderId] } : o)
+      );
+      setSaveSuccess(orderId);
+      setTimeout(() => setSaveSuccess(null), 2500);
+    } catch {
+      // silent — could add per-row error if needed
+    } finally {
+      setSavingId(null);
+    }
+  };
+
   const revenue = orders.reduce((s, o) => s + (o.totalAmount || 0), 0);
 
   if (!isAdmin) return null;
@@ -92,7 +127,6 @@ export default function Admin() {
             </div>
           </div>
 
-          {/* Stats */}
           <div className="admin-stats">
             <div className="admin-stat">
               <span className="stat-lbl">Total Products</span>
@@ -243,25 +277,65 @@ export default function Admin() {
                   <tr>
                     <th>Order ID</th>
                     <th>Customer</th>
-                    <th>Items</th>
+                    <th>Products</th>
                     <th>Total</th>
                     <th>Payment</th>
                     <th>Status</th>
                     <th>Date</th>
+                    <th>Action</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {orders.map((o) => (
-                    <tr key={o._id}>
-                      <td><span className="order-id">#{o._id.slice(-8).toUpperCase()}</span></td>
-                      <td>{o.userId?.username || '—'}</td>
-                      <td>{o.products?.length}</td>
-                      <td><span className="price-strong">₱{o.totalAmount?.toLocaleString()}</span></td>
-                      <td>{o.paymentMethod}</td>
-                      <td><span className={`badge ${statusColors[o.status] || 'badge-orange'}`}>{o.status}</span></td>
-                      <td style={{ color: 'var(--muted)', fontSize: '0.82rem' }}>{new Date(o.createdAt).toLocaleDateString()}</td>
-                    </tr>
-                  ))}
+                  {orders.map((o) => {
+                    const isDirty   = statusDraft[o._id] !== o.status;
+                    const isSaving  = savingId === o._id;
+                    const didSave   = saveSuccess === o._id;
+                    return (
+                      <tr key={o._id}>
+                        <td><span className="order-id">#{o._id.slice(-8).toUpperCase()}</span></td>
+                        <td>{o.userId?.username || '—'}</td>
+                        <td>
+                          <div className="order-products-list">
+                            {o.products?.map((item, i) => (
+                              <span key={i} className="order-product-name">
+                                {item.productId?.name || '—'}
+                                {item.quantity > 1 && <span className="order-product-qty"> ×{item.quantity}</span>}
+                              </span>
+                            ))}
+                          </div>
+                        </td>
+                        <td><span className="price-strong">₱{o.totalAmount?.toLocaleString()}</span></td>
+                        <td>{o.paymentMethod}</td>
+                        <td>
+                          <select
+                            className="status-select"
+                            value={statusDraft[o._id] || o.status}
+                            onChange={(e) => handleStatusChange(o._id, e.target.value)}
+                          >
+                            {STATUS_OPTIONS.map(s => (
+                              <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
+                            ))}
+                          </select>
+                        </td>
+                        <td style={{ color: 'var(--muted)', fontSize: '0.82rem' }}>
+                          {new Date(o.createdAt).toLocaleDateString()}
+                        </td>
+                        <td>
+                          {didSave ? (
+                            <span className="badge badge-green">Saved ✓</span>
+                          ) : (
+                            <button
+                              className={`btn-save-status ${!isDirty ? 'btn-save-status--disabled' : ''}`}
+                              onClick={() => handleSaveStatus(o._id)}
+                              disabled={!isDirty || isSaving}
+                            >
+                              {isSaving ? 'Saving…' : 'Save'}
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

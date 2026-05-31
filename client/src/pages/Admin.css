@@ -511,3 +511,74 @@ textarea.input-field { resize: vertical; min-height: 88px; }
   .form-row           { grid-template-columns: 1fr; }
   .add-form           { padding: 20px; }
 }
+/* ════════════════════════════
+   ORDER STATUS SELECT + SAVE
+════════════════════════════ */
+.status-select {
+  background: var(--off-white);
+  border: 1.5px solid rgba(26,10,46,0.15);
+  color: var(--ink);
+  font-family: var(--font-b);
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 6px 10px;
+  border-radius: var(--radius-md);
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.18s;
+  width: 130px;
+}
+.status-select:focus {
+  border-color: var(--main-color);
+}
+
+.btn-save-status {
+  background: var(--main-color);
+  color: #fff;
+  font-family: var(--font-b);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 6px 16px;
+  border: 2px solid var(--main-color);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: background 0.15s, transform 0.12s;
+  white-space: nowrap;
+}
+.btn-save-status:hover:not(:disabled) {
+  background: var(--main-dark);
+  border-color: var(--main-dark);
+  transform: translateY(-1px);
+}
+.btn-save-status--disabled {
+  background: rgba(26,10,46,0.08);
+  border-color: rgba(26,10,46,0.08);
+  color: rgba(26,10,46,0.3);
+  cursor: not-allowed;
+}
+
+/* ── Order Product Names ── */
+.order-products-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.order-product-name {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.order-product-qty {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--main-color);
+  background: rgba(84,22,144,0.08);
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+}

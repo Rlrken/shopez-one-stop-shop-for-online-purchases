@@ -20,7 +20,8 @@ export const getProducts = ()     => API.get('/products');
 export const addProduct  = (data) => API.post('/products', data);
 
 // ── Orders ────────────────────────────────────────────
-export const createOrder = (data) => API.post('/orders', data);
-export const getOrders   = ()     => API.get('/orders');
+export const createOrder        = (data)       => API.post('/orders', data);
+export const getOrders          = ()           => API.get('/orders');
+export const updateOrderStatus  = (id, status) => API.put(`/orders/${id}/status`, { status });
 
 export default API;
