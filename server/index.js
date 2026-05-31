@@ -2,6 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 require("dotenv").config();
+console.log("MONGO_URI:", process.env.MONGO_URI);
 
 // Route Imports
 const userRoutes = require("./routes/userRoutes");
@@ -19,6 +20,7 @@ app.use(express.json());
 mongoose.connect(process.env.MONGO_URI)
 .then(() => {
     console.log("MongoDB Connected Successfully");
+    console.log("DB Name:", mongoose.connection.db.databaseName);
 })
 .catch((error) => {
     console.log("MongoDB Connection Error:", error);
@@ -27,6 +29,12 @@ mongoose.connect(process.env.MONGO_URI)
 // Default Route
 app.get("/", (req, res) => {
     res.send("ShopEZ Backend API Running");
+});
+
+// Request Logger
+app.use((req, res, next) => {
+    console.log(`${req.method} ${req.path}`, req.body);
+    next();
 });
 
 // API Routes

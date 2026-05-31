@@ -5,9 +5,12 @@ const jwt = require("jsonwebtoken");
 // Register User
 exports.registerUser = async (req, res) => {
     try {
+        console.log("Register route hit");
+        console.log("Request body:", req.body);
+        console.log("Role received:", req.body.role);
 
-        const { username, email, password } = req.body;
-
+        const { username, email, password, role } = req.body;
+        
         const existingUser = await User.findOne({ email });
 
         if (existingUser) {
@@ -18,11 +21,19 @@ exports.registerUser = async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
+        // Accept "admin" directly, default everything else to "user"
+        const assignedRole = role === "admin" ? "admin" : "user";
+
+        console.log("Assigned role:", assignedRole);
+
         const user = await User.create({
             username,
             email,
-            password: hashedPassword
+            password: hashedPassword,
+            role: assignedRole
         });
+
+        console.log("User created with role:", user.role);
 
         res.status(201).json({
             success: true,
