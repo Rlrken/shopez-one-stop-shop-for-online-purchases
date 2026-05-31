@@ -83,3 +83,68 @@
   text-decoration: none;
 }
 .auth-switch a:hover { text-decoration: underline; }
+
+/* Role Selector */
+.role-selector {
+  margin-bottom: 4px;
+}
+
+.role-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--text);
+}
+
+.role-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.role-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 14px 8px;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  background: transparent;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+  text-align: center;
+}
+
+.role-card:hover {
+  border-color: #c4b5fd;
+  background: #faf5ff;
+}
+
+.role-card--active {
+  border-color: var(--primary);
+  background: #fdf4ff;
+  box-shadow: 0 0 0 3px rgba(var(--primary-rgb, 167, 90, 224), 0.12);
+}
+
+.role-icon {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.role-name {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.role-desc {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  line-height: 1.3;
+}
+
+.role-card--active .role-name {
+  color: var(--primary);
+}

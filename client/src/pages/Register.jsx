@@ -4,7 +4,7 @@ import { registerUser } from '../services/api';
 import './Auth.css';
 
 export default function Register() {
-  const [form, setForm] = useState({ username: '', email: '', password: '', confirm: '' });
+  const [form, setForm] = useState({ username: '', email: '', password: '', confirm: '', role: 'buyer' });
   const [error, setError]   = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -28,7 +28,7 @@ export default function Register() {
 
     try {
       setLoading(true);
-      await registerUser({ username: form.username, email: form.email, password: form.password });
+      await registerUser({ username: form.username, email: form.email, password: form.password, role: form.role });
       navigate('/login', { state: { registered: true } });
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed. Please try again.');
@@ -45,6 +45,32 @@ export default function Register() {
         <p className="auth-sub">Join thousands of happy shoppers</p>
 
         <form onSubmit={handleSubmit} className="auth-form">
+          <div className="role-selector">
+            <label className="role-label">I want to</label>
+            <div className="role-options">
+              <button
+                type="button"
+                className={`role-card ${form.role === 'buyer' ? 'role-card--active' : ''}`}
+                onClick={() => setForm({ ...form, role: 'buyer' })}
+              >
+                <span className="role-icon">🛒</span>
+                <span className="role-name">Shop / Buy</span>
+                <span className="role-desc">Browse and purchase products</span>
+              </button>
+              <button
+                type="button"
+                className={`role-card ${form.role === 'admin' ? 'role-card--active' : ''}`}
+                onClick={() => {
+                  setForm({ ...form, role: 'admin' });
+                }}
+              >
+                <span className="role-icon">🏪</span>
+                <span className="role-name">Sell / Admin</span>
+                <span className="role-desc">List products and manage orders</span>
+              </button>
+            </div>
+          </div>
+
           <div className="form-group">
             <label>Username</label>
             <input

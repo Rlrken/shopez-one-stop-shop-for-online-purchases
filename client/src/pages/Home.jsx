@@ -3,83 +3,113 @@ import { useAuth } from '../context/AuthContext';
 import './Home.css';
 
 const features = [
-  { icon: '🔍', title: 'Easy Discovery', desc: 'Browse thousands of products with smart filters and search.' },
-  { icon: '🛒', title: 'Simple Cart', desc: 'Add items and checkout in just a few clicks.' },
-  { icon: '🔐', title: 'Secure Checkout', desc: 'Your data and payments are always protected.' },
-  { icon: '📦', title: 'Order Tracking', desc: 'Stay updated on every order from placement to delivery.' },
+  { num: '01', icon: '🔍', title: 'Easy Discovery',   desc: 'Browse thousands of products with smart filters and search built for real humans.' },
+  { num: '02', icon: '🛒', title: 'Simple Cart',       desc: 'Add items and checkout in just a few clicks — zero friction, maximum speed.' },
+  { num: '03', icon: '🔐', title: 'Secure Checkout',   desc: 'End-to-end encryption. Your data and payments are locked down, always.' },
+  { num: '04', icon: '📦', title: 'Order Tracking',    desc: 'Real-time updates from placement to delivery, right in your pocket.' },
 ];
+
+const reviews = [
+  { stars: '★★★★★', text: 'Fastest checkout I have ever experienced. Took me 45 seconds from cart to confirmation.',         meta: 'ANNA K. — VERIFIED BUYER' },
+  { stars: '★★★★★', text: 'The search actually finds what I am looking for. Revolutionary concept, honestly.',               meta: 'JAMES O. — VERIFIED BUYER' },
+  { stars: '★★★★★', text: 'Order tracking is legit. I watched my package move across the country in real time.',           meta: 'PRIYA M. — VERIFIED BUYER' },
+];
+
+const marqueeItems = [
+  'Free Shipping Over $50', 'New Arrivals Daily', '10,000+ Products',
+  '5-Star Reviews', 'Secure Payments', 'Easy Returns', '24/7 Support',
+];
+
+const chipDots = ['yellow', 'orange', 'red', 'yellow'];
 
 export default function Home() {
   const { user } = useAuth();
 
   return (
     <div className="home">
-      {/* Hero Section */}
+
+      {/* ── Hero ── */}
       <section className="hero">
         <div className="hero-content page-container">
+
           <div className="hero-text">
-            <span className="hero-tag badge badge-orange">✨ Effortless Shopping</span>
+            <span className="hero-tag">Live Now — Shop Smarter</span>
             <h1 className="hero-title">
-              Your one-stop<br />
-              <span className="highlight">shopping</span> destination
+              <span className="outline">Stop</span>
+              <span className="hl-yellow">Shopping.</span>
+              Start
+              <span className="hl-red">Finding.</span>
             </h1>
             <p className="hero-subtitle">
-              Discover amazing products, enjoy personalized recommendations,
-              and experience a seamless checkout — all in one place.
+              Thousands of products. Zero confusion. ShopEZ is built for people
+              who know what they want — and people still figuring it out.
             </p>
             <div className="hero-ctas">
-              <Link to="/products" className="btn btn-primary hero-btn">
-                🛍️ Shop Now
-              </Link>
-              {!user && (
-                <Link to="/register" className="btn btn-secondary hero-btn">
-                  Join Free
-                </Link>
-              )}
+              <Link to="/products" className="btn-hero-primary">🛍️ Shop Now →</Link>
+              {!user && <Link to="/register" className="btn-hero-ghost">Join Free</Link>}
             </div>
           </div>
+
           <div className="hero-graphic">
-            <div className="graphic-circle c1">🛍️</div>
-            <div className="graphic-circle c2">⭐</div>
-            <div className="graphic-circle c3">💳</div>
-            <div className="graphic-circle c4">📦</div>
-            <div className="graphic-main">🎁</div>
+            <div className="graphic-bg-word">EZ</div>
+            <div className="graphic-main-emoji">🎁</div>
+            <div className="graphic-chips">
+              {[
+                ['yellow', 'Products Available',  '10,000+'],
+                ['orange', 'Happy Customers',     '5,000+'],
+                ['red',    'Avg. Checkout Time',  '52 sec'],
+                ['yellow', 'Customer Rating',     '4.9 ★'],
+              ].map(([dot, label, val]) => (
+                <div className="graphic-chip" key={label}>
+                  <span className={`chip-dot ${dot}`} />
+                  {label}
+                  <span className="chip-val">{val}</span>
+                </div>
+              ))}
+            </div>
           </div>
+
         </div>
       </section>
 
-      {/* Stats Bar */}
+      {/* ── Stats Bar ── */}
       <section className="stats-bar">
-        <div className="page-container stats-inner">
-          <div className="stat-item">
-            <span className="stat-num">10K+</span>
-            <span className="stat-label">Products</span>
+        {[['10K+','Products'],['5K+','Happy Shoppers'],['100%','Secure'],['24/7','Support']].map(([n,l]) => (
+          <div className="stat-item" key={l}>
+            <span className="stat-num">{n}</span>
+            <span className="stat-label">{l}</span>
           </div>
-          <div className="stat-divider" />
-          <div className="stat-item">
-            <span className="stat-num">5K+</span>
-            <span className="stat-label">Happy Shoppers</span>
-          </div>
-          <div className="stat-divider" />
-          <div className="stat-item">
-            <span className="stat-num">100%</span>
-            <span className="stat-label">Secure</span>
-          </div>
-          <div className="stat-divider" />
-          <div className="stat-item">
-            <span className="stat-num">24/7</span>
-            <span className="stat-label">Support</span>
-          </div>
-        </div>
+        ))}
       </section>
 
-      {/* Features */}
-      <section className="features page-container">
-        <h2 className="section-title">Why choose <span className="highlight">ShopEZ?</span></h2>
+      {/* ── Marquee ── */}
+      <div className="marquee-strip">
+        <div className="marquee-track">
+          {[...marqueeItems, ...marqueeItems].map((item, i) => (
+            <span className="marquee-item" key={i}>
+              {item}<span className="mdot">◆</span>
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Features ── */}
+      <section className="features">
+        <div className="section-header">
+          <div>
+            <p className="section-label">Why ShopEZ</p>
+            <h2 className="section-title">Built for<br /><span className="hl">real people.</span></h2>
+          </div>
+          <p className="section-caption">
+            We obsessed over every detail so your shopping feels effortless, not exhausting.
+          </p>
+        </div>
+
         <div className="features-grid">
           {features.map((f) => (
-            <div className="feature-card" key={f.title}>
-              <div className="feature-icon">{f.icon}</div>
+            <div className="feature-card" key={f.num}>
+              <div className="feature-num">{f.num}</div>
+              <div className="feature-icon-wrap">{f.icon}</div>
               <h3>{f.title}</h3>
               <p>{f.desc}</p>
             </div>
@@ -87,17 +117,52 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CTA Banner */}
-      <section className="cta-banner page-container">
-        <div className="cta-inner">
-          <h2>Ready to start shopping?</h2>
-          <p>Join thousands of satisfied customers today.</p>
-          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Link to="/products" className="btn btn-primary">Browse Products</Link>
-            {!user && <Link to="/register" className="btn btn-outline" style={{ color: 'white', borderColor: 'white' }}>Create Account</Link>}
+      {/* ── Social Proof ── */}
+      <section className="proof-strip">
+        <div className="proof-quote-wrap">
+          <div className="proof-quote-mark">"</div>
+          <p className="proof-quote">
+            ShopEZ completely changed how I buy things online. It's fast,
+            it's simple, and somehow it always knows what I'm looking for
+            before I do.
+          </p>
+          <div className="proof-author">
+            <div className="proof-avatar">MR</div>
+            <div>
+              <p className="proof-name">Maria Reyes</p>
+              <p className="proof-role">Verified Customer · 3 years shopping</p>
+            </div>
           </div>
         </div>
+
+        <div className="proof-reviews">
+          {reviews.map((r, i) => (
+            <div className="review-card" key={i}>
+              <div className="review-stars">{r.stars}</div>
+              <p className="review-text">{r.text}</p>
+              <p className="review-meta">{r.meta}</p>
+            </div>
+          ))}
+        </div>
       </section>
+
+      {/* ── CTA Banner ── */}
+      <section className="cta-banner">
+        <div>
+          <p className="cta-label">Ready when you are</p>
+          <h2>Your next<br />favorite thing<br />is waiting.</h2>
+          <p>
+            Join thousands of satisfied shoppers who've made ShopEZ their go-to
+            destination. No fluff, no gimmicks — just great products and a
+            checkout that actually works.
+          </p>
+        </div>
+        <div className="cta-actions">
+          <Link to="/products" className="btn-cta-dark">Browse Products →</Link>
+          {!user && <Link to="/register" className="btn-cta-outline">Create Free Account</Link>}
+        </div>
+      </section>
+
     </div>
   );
 }
