@@ -8,7 +8,7 @@ For sellers, ShopEZ offers a powerful dashboard equipped with efficient order ma
 
 ShopEZ combines convenience, security, and smart business tools—bringing the future of online shopping to both customers and sellers.
 
-**Status:** planning
+**Status:** review
 **Domain:** E-Commerce
 **Progress:** 0%
 
