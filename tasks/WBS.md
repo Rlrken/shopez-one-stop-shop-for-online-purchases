@@ -3,9 +3,9 @@
 ## Milestones
 
 ###  PROJECT SETUP AND CONFIGURATION 
-- **Status:** todo
+- **Status:** done
 - **Priority:** medium
-- **Due:** N/A
+- **Due:** 2026-05-31
 
 Creating project folder
 1.  Create a new folder with your <project name>.
@@ -41,9 +41,9 @@ routes
 
 
 ### DATABASE DEVELOPMENT
-- **Status:** todo
+- **Status:** done
 - **Priority:** medium
-- **Due:** N/A
+- **Due:** 2026-05-31
 
 • Install Mongoose. 
 • Create database connection. 
@@ -79,9 +79,9 @@ Schema use-case:
 
 
 ### BACKEND DEVELOPMENT
-- **Status:** todo
+- **Status:** done
 - **Priority:** medium
-- **Due:** N/A
+- **Due:** 2026-05-31
 
 Setup express server: 
 • Create index.js file. 
@@ -121,9 +121,9 @@ Setup express server:
 
 
 ### FRONTEND DEVELOPMENT
-- **Status:** todo
+- **Status:** done
 - **Priority:** medium
-- **Due:** N/A
+- **Due:** 2026-05-31
 
 1. Setup React Application:
 • Create a React app in the client folder.
@@ -141,9 +141,9 @@ Setup express server:
 
 
 ### PROJECT IMPLEMENTATION & EXECUTION
-- **Status:** todo
+- **Status:** done
 - **Priority:** medium
-- **Due:** N/A
+- **Due:** 2026-05-31
 
 User Authentication
 
